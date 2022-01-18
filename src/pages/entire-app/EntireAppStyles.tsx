@@ -7,6 +7,6 @@ export const Container = styled.div`
 
 export const MainContent = styled.div`
   flex: 1;
-  padding: 11rem 6rem;
+  padding: 11rem 6rem 4rem;
   background: linear-gradient(180deg, #f3f3fb 0%, #fdfbfd 100%);
 `;
