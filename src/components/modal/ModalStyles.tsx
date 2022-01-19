@@ -14,6 +14,10 @@ export const StyledBackdrop = styled.div`
   background-color: rgba(0, 0, 0, 0.75);
 `;
 
+export const BackdropInner = styled.div`
+  position: relative;
+`;
+
 export const StyledModal = styled.div`
   background-color: white;
   padding: 1rem;
@@ -32,4 +36,27 @@ export const StyledModal = styled.div`
       transform: translateY(0);
     }
   }
+`;
+
+export const StyledClose = styled.button`
+  height: 50px;
+  width: 50px;
+  border-radius: 50%;
+  background-color: red;
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  top: 7px;
+  right: 7px;
+  z-index: 90;
+  background: linear-gradient(92.68deg, #7cb8f7 0%, #2a8bf2 100%);
+  box-shadow: 6px 6px 25px rgba(42, 139, 242, 0.15),
+    4px 4px 25px rgba(42, 139, 242, 0.05),
+    10px 6px 25px rgba(42, 139, 242, 0.15);
+  border: none;
+  outline: none;
+  color: white;
+  font-size: 3rem;
+  cursor: pointer;
 `;

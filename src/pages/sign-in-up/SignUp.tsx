@@ -5,7 +5,12 @@ import Authentication from '../../components/authentication/Authentication';
 import Spinner from '../../components/spinner/Spinner';
 
 import { useAppDispatch, useAppSelector } from '../../store/store';
-import { authUser, checkEmail, selectIsLoading } from '../../store/authSlice';
+import {
+  checkEmail,
+  clearError,
+  selectError,
+  selectIsLoading,
+} from '../../store/authSlice';
 
 import {
   Container,
@@ -13,6 +18,7 @@ import {
   Input,
   Button,
   HeadingNavLink,
+  Error,
 } from './SignInUpStyles';
 import { MainHeading } from '../../GlobalStyles';
 
@@ -23,13 +29,16 @@ const SignUp = () => {
   const [password, setPassword] = useState('');
   const [isAuthOpen, setIsAuthOpen] = useState(false);
 
+  const dispatch = useAppDispatch();
+
   const isLoading = useAppSelector(selectIsLoading);
+  const error = useAppSelector(selectError);
 
   useEffect(() => {
-    console.log(isAuthOpen);
-  }, [isAuthOpen]);
-
-  const dispatch = useAppDispatch();
+    if (error) {
+      dispatch(clearError());
+    }
+  }, [dispatch]);
 
   const onChangeFirstNameHandler = (
     e: React.FormEvent<HTMLInputElement>
@@ -56,11 +65,13 @@ const SignUp = () => {
   const onSubmitHandler = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    await dispatch(checkEmail({ email }));
+    if (error) {
+      dispatch(clearError());
+    }
 
+    const response = await dispatch(checkEmail({ email }));
+    if (response.hasOwnProperty('error')) return;
     setIsAuthOpen(true);
-
-    console.log('here');
   };
 
   const onCloseAuthHandler = () => {
@@ -70,14 +81,12 @@ const SignUp = () => {
     setPassword('');
 
     setIsAuthOpen(false);
-
-    dispatch(authUser());
   };
 
   return (
     <Container>
       {isAuthOpen && (
-        <Modal>
+        <Modal onCloseAuthHandler={onCloseAuthHandler}>
           <Authentication
             userData={{ email, firstName, lastName, password }}
             onCloseAuth={onCloseAuthHandler}
@@ -89,6 +98,7 @@ const SignUp = () => {
         <HeadingNavLink to="/sign-up">Sign Up</HeadingNavLink>
       </MainHeading>
       <Form onSubmit={onSubmitHandler}>
+        {error && <Error>{error}</Error>}
         <Input
           placeholder="First Name"
           value={firstName}

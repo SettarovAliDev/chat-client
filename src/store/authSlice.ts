@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from './store';
 import chatApi from '../api/api';
 
@@ -6,25 +6,30 @@ type Email = {
   email: string;
 };
 
-export const checkEmail = createAsyncThunk(
-  'auth/checkEmail',
-  async (email: Email) => {
-    try {
-      const response = await chatApi.post('register', email, {
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-      });
-
-      console.log(response);
-
-      return response.data;
-    } catch (error) {
-      console.error(error);
-    }
+export const checkEmail = createAsyncThunk<
+  {
+    token: string;
+  },
+  {
+    email: string;
+  },
+  {
+    rejectValue: string;
   }
-);
+>('auth/checkEmail', async (email: Email, { rejectWithValue }) => {
+  try {
+    const response = await chatApi.post('register', email, {
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error(error);
+    return rejectWithValue(error.response.data.message);
+  }
+});
 
 export const createNewUser = createAsyncThunk<
   {
@@ -39,10 +44,10 @@ export const createNewUser = createAsyncThunk<
   },
   {
     state: RootState;
+    rejectValue: string;
   }
->('auth/createNewUser', async (userData, { getState }) => {
+>('auth/createNewUser', async (userData, { getState, rejectWithValue }) => {
   try {
-    console.log(userData);
     const { token } = getState().auth;
     const response = await chatApi.post('register/secret', userData, {
       headers: {
@@ -51,12 +56,10 @@ export const createNewUser = createAsyncThunk<
         Authorization: token,
       },
     });
-
-    console.log(response);
-
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
+    return rejectWithValue(error.response.data.message);
   }
 });
 
@@ -64,12 +67,14 @@ interface AuthState {
   token: string;
   isLoading: boolean;
   isAuth: boolean;
+  error: string | null | undefined;
 }
 
 const initialState: AuthState = {
   token: '',
   isLoading: false,
   isAuth: false,
+  error: null,
 };
 
 const authSlice = createSlice({
@@ -84,6 +89,9 @@ const authSlice = createSlice({
       state.isAuth = false;
       state.isLoading = false;
     },
+    clearError(state) {
+      state.error = null;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -93,12 +101,28 @@ const authSlice = createSlice({
       .addCase(checkEmail.fulfilled, (state, action) => {
         state.isLoading = false;
         state.token = action.payload.token;
+      })
+      .addCase(checkEmail.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload;
+      })
+      .addCase(createNewUser.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(createNewUser.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.token = action.payload.token;
+      })
+      .addCase(createNewUser.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload;
       });
   },
 });
 
-export const { authUser, logoutUser } = authSlice.actions;
+export const { authUser, logoutUser, clearError } = authSlice.actions;
 export default authSlice.reducer;
 
 export const selectIsLoading = (state: RootState) => state.auth.isLoading;
 export const selectIsAuth = (state: RootState) => state.auth.isAuth;
+export const selectError = (state: RootState) => state.auth.error;

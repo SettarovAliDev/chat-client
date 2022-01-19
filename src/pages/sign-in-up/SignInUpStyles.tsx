@@ -57,3 +57,15 @@ export const HeadingNavLink = styled(NavLink)`
     border-bottom: 3px solid #000000;
   }
 `;
+
+export const Error = styled.div`
+  text-align: center;
+  padding: 1.5rem;
+  background-color: white;
+  color: #ff8499;
+  font-size: 2rem;
+  border-radius: 0.6rem;
+  margin-bottom: 2rem;
+  border: 1px solid #ff8499;
+  overflow: hidden;
+`;

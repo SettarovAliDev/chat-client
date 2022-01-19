@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import {
   Container,
@@ -6,12 +6,31 @@ import {
   Input,
   Button,
   HeadingNavLink,
+  Error,
 } from './SignInUpStyles';
 import { MainHeading } from '../../GlobalStyles';
+import { useAppDispatch, useAppSelector } from '../../store/store';
+import {
+  clearError,
+  selectError,
+  selectIsLoading,
+} from '../../store/authSlice';
+import Spinner from '../../components/spinner/Spinner';
 
 const SignIn = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  const dispatch = useAppDispatch();
+
+  const isLoading = useAppSelector(selectIsLoading);
+  const error = useAppSelector(selectError);
+
+  useEffect(() => {
+    if (error) {
+      dispatch(clearError());
+    }
+  }, [dispatch]);
 
   const onChangeEmailHandler = (e: React.FormEvent<HTMLInputElement>): void => {
     setEmail(e.currentTarget.value);
@@ -37,6 +56,7 @@ const SignIn = () => {
         <HeadingNavLink to="/sign-up">Sign Up</HeadingNavLink>
       </MainHeading>
       <Form onSubmit={onSubmitHandler}>
+        {error && <Error>{error}</Error>}
         <Input
           placeholder="E-Mail"
           value={email}
@@ -55,7 +75,9 @@ const SignIn = () => {
           autoComplete="off"
           required
         />
-        <Button type="submit">Sign In</Button>
+        <Button type="submit">
+          {isLoading ? <Spinner size="3rem" /> : 'Sign In'}
+        </Button>
       </Form>
     </Container>
   );

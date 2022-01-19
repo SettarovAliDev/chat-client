@@ -1,9 +1,23 @@
 import { useState } from 'react';
 
-import { useAppDispatch } from '../../store/store';
-import { createNewUser } from '../../store/authSlice';
+import { useAppDispatch, useAppSelector } from '../../store/store';
+import {
+  authUser,
+  clearError,
+  createNewUser,
+  selectError,
+  selectIsLoading,
+} from '../../store/authSlice';
 
-import { Container, Heading, Form, Input } from './AuthenticationStyles';
+import {
+  Container,
+  Heading,
+  Form,
+  Input,
+  Error,
+  Button,
+} from './AuthenticationStyles';
+import Spinner from '../spinner/Spinner';
 
 type AuthenticationProps = {
   onCloseAuth: () => void;
@@ -24,25 +38,34 @@ const Authentication = ({ onCloseAuth, userData }: AuthenticationProps) => {
   const [key6, setKey6] = useState('');
 
   const dispatch = useAppDispatch();
+  const error = useAppSelector(selectError);
+  const isLoading = useAppSelector(selectIsLoading);
 
   const onSubmitHandler = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    await dispatch(
+    const response = await dispatch(
       createNewUser({
         ...userData,
         secretKey: `${key1}${key2}${key3}${key4}${key5}${key6}`,
       })
     );
 
+    if (response.hasOwnProperty('error')) return;
+
     onCloseAuth();
 
-    console.log('close');
+    if (error) {
+      dispatch(clearError());
+    }
+
+    dispatch(authUser());
   };
 
   return (
     <Container>
       <Heading>Authentication</Heading>
+      {error && <Error>{error}</Error>}
       <Form onSubmit={onSubmitHandler}>
         <Input
           value={key1}
@@ -80,7 +103,9 @@ const Authentication = ({ onCloseAuth, userData }: AuthenticationProps) => {
           type="text"
           maxLength={1}
         />
-        <button type="submit">Submit</button>
+        <Button type="submit">
+          {isLoading ? <Spinner size="3rem" /> : 'Submit'}
+        </Button>
       </Form>
     </Container>
   );
