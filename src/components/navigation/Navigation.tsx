@@ -1,3 +1,6 @@
+import { useAppDispatch } from '../../store/store';
+import { logoutUser } from '../../store/authSlice';
+
 import {
   MenuNav,
   MenuList,
@@ -14,14 +17,20 @@ import { ReactComponent as Calendar } from '../../assets/calendar.svg';
 import { ReactComponent as Settings } from '../../assets/settings.svg';
 import { ReactComponent as Logout } from '../../assets/logout.svg';
 
+const HomeIcon = menuIcon(Home);
+const ChatIcon = menuIcon(Chat);
+const ContactIcon = menuIcon(Contact);
+const NotificationsIcon = menuIcon(Notifications);
+const CalendarIcon = menuIcon(Calendar);
+const SettingsIcon = menuIcon(Settings);
+const LogoutIcon = menuIcon(Logout);
+
 const Navigation = () => {
-  const HomeIcon = menuIcon(Home);
-  const ChatIcon = menuIcon(Chat);
-  const ContactIcon = menuIcon(Contact);
-  const NotificationsIcon = menuIcon(Notifications);
-  const CalendarIcon = menuIcon(Calendar);
-  const SettingsIcon = menuIcon(Settings);
-  const LogoutIcon = menuIcon(Logout);
+  const dispatch = useAppDispatch();
+
+  const onHandleLogout = () => {
+    dispatch(logoutUser());
+  };
 
   return (
     <MenuNav>
@@ -63,7 +72,7 @@ const Navigation = () => {
           </MenuLink>
         </MenuItem>
         <MenuItem>
-          <MenuLink to="/sign-in">
+          <MenuLink onClick={onHandleLogout} to="/sign-in">
             <LogoutIcon />
             Logout
           </MenuLink>
