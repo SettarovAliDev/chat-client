@@ -6,7 +6,7 @@ import Spinner from '../../components/spinner/Spinner';
 
 import { useAppDispatch, useAppSelector } from '../../store/store';
 import {
-  checkEmail,
+  checkRegister,
   clearError,
   selectError,
   selectIsLoading,
@@ -69,7 +69,7 @@ const SignUp = () => {
       dispatch(clearError());
     }
 
-    const response = await dispatch(checkEmail({ email }));
+    const response = await dispatch(checkRegister({ email }));
     if (response.hasOwnProperty('error')) return;
     setIsAuthOpen(true);
   };
@@ -88,7 +88,7 @@ const SignUp = () => {
       {isAuthOpen && (
         <Modal onCloseAuthHandler={onCloseAuthHandler}>
           <Authentication
-            userData={{ email, firstName, lastName, password }}
+            registerData={{ email, firstName, lastName, password }}
             onCloseAuth={onCloseAuthHandler}
           />
         </Modal>

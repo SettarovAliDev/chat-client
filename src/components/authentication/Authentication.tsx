@@ -2,11 +2,12 @@ import { useState } from 'react';
 
 import { useAppDispatch, useAppSelector } from '../../store/store';
 import {
-  authUser,
   clearError,
-  createNewUser,
+  checkRegisterSecret,
   selectError,
   selectIsLoading,
+  checkLoginSecret,
+  loginUserByToken,
 } from '../../store/authSlice';
 
 import {
@@ -21,15 +22,23 @@ import Spinner from '../spinner/Spinner';
 
 type AuthenticationProps = {
   onCloseAuth: () => void;
-  userData: {
+  registerData?: {
     email: string;
+    password: string;
     firstName: string;
     lastName: string;
+  };
+  loginData?: {
+    email: string;
     password: string;
   };
 };
 
-const Authentication = ({ onCloseAuth, userData }: AuthenticationProps) => {
+const Authentication = ({
+  onCloseAuth,
+  registerData,
+  loginData,
+}: AuthenticationProps) => {
   const [key1, setKey1] = useState('');
   const [key2, setKey2] = useState('');
   const [key3, setKey3] = useState('');
@@ -44,12 +53,24 @@ const Authentication = ({ onCloseAuth, userData }: AuthenticationProps) => {
   const onSubmitHandler = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const response = await dispatch(
-      createNewUser({
-        ...userData,
-        secretKey: `${key1}${key2}${key3}${key4}${key5}${key6}`,
-      })
-    );
+    let response: any;
+
+    if (registerData) {
+      response = await dispatch(
+        checkRegisterSecret({
+          ...registerData,
+          secretKey: `${key1}${key2}${key3}${key4}${key5}${key6}`,
+        })
+      );
+    }
+
+    if (loginData) {
+      response = await dispatch(
+        checkLoginSecret({
+          secretKey: `${key1}${key2}${key3}${key4}${key5}${key6}`,
+        })
+      );
+    }
 
     if (response.hasOwnProperty('error')) return;
 
@@ -59,7 +80,7 @@ const Authentication = ({ onCloseAuth, userData }: AuthenticationProps) => {
       dispatch(clearError());
     }
 
-    dispatch(authUser());
+    dispatch(loginUserByToken());
   };
 
   return (

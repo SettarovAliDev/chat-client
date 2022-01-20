@@ -1,12 +1,8 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState } from './store';
 import chatApi from '../api/api';
 
-type Email = {
-  email: string;
-};
-
-export const checkEmail = createAsyncThunk<
+export const checkRegister = createAsyncThunk<
   {
     token: string;
   },
@@ -16,7 +12,7 @@ export const checkEmail = createAsyncThunk<
   {
     rejectValue: string;
   }
->('auth/checkEmail', async (email: Email, { rejectWithValue }) => {
+>('auth/checkRegister', async (email, { rejectWithValue }) => {
   try {
     const response = await chatApi.post('register', email, {
       headers: {
@@ -31,7 +27,7 @@ export const checkEmail = createAsyncThunk<
   }
 });
 
-export const createNewUser = createAsyncThunk<
+export const checkRegisterSecret = createAsyncThunk<
   {
     token: string;
   },
@@ -46,16 +42,110 @@ export const createNewUser = createAsyncThunk<
     state: RootState;
     rejectValue: string;
   }
->('auth/createNewUser', async (userData, { getState, rejectWithValue }) => {
+>(
+  'auth/checkRegisterSecret',
+  async (userData, { getState, rejectWithValue }) => {
+    try {
+      const { token } = getState().auth;
+      const response = await chatApi.post('register/secret', userData, {
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+          Authorization: token,
+        },
+      });
+
+      localStorage.setItem('token', response.data.token);
+      return response.data;
+    } catch (error: any) {
+      console.error(error);
+      return rejectWithValue(error.response.data.message);
+    }
+  }
+);
+
+export const checkLogin = createAsyncThunk<
+  {
+    token: string;
+  },
+  {
+    email: string;
+    password: string;
+  },
+  {
+    rejectValue: string;
+  }
+>('auth/checkLogin', async (credentials, { rejectWithValue }) => {
+  try {
+    const response = await chatApi.post('login', credentials, {
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error(error);
+    if (error.response.data.message)
+      return rejectWithValue(error.response.data.message);
+    return rejectWithValue('Email must be email');
+  }
+});
+
+export const checkLoginSecret = createAsyncThunk<
+  {
+    token: string;
+  },
+  {
+    secretKey: string;
+  },
+  {
+    state: RootState;
+    rejectValue: string;
+  }
+>('auth/checkLoginSecret', async (userData, { getState, rejectWithValue }) => {
   try {
     const { token } = getState().auth;
-    const response = await chatApi.post('register/secret', userData, {
+    const response = await chatApi.post('login/secret', userData, {
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
         Authorization: token,
       },
     });
+
+    localStorage.setItem('token', response.data.token);
+    return response.data;
+  } catch (error: any) {
+    console.error(error);
+    return rejectWithValue(error.response.data.message);
+  }
+});
+
+export const loginUserByToken = createAsyncThunk<
+  {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    photo: string;
+  },
+  undefined,
+  {
+    state: RootState;
+    rejectValue: string;
+  }
+>('auth/loginUserByToken', async (_, { rejectWithValue }) => {
+  try {
+    const token = localStorage.getItem('token')!;
+    const response = await chatApi.get('find', {
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        Authorization: token,
+      },
+    });
+
     return response.data;
   } catch (error: any) {
     console.error(error);
@@ -68,6 +158,13 @@ interface AuthState {
   isLoading: boolean;
   isAuth: boolean;
   error: string | null | undefined;
+  user: null | {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    photo: string;
+  };
 }
 
 const initialState: AuthState = {
@@ -75,19 +172,19 @@ const initialState: AuthState = {
   isLoading: false,
   isAuth: false,
   error: null,
+  user: null,
 };
 
 const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    authUser(state) {
-      state.isAuth = true;
-    },
     logoutUser(state) {
       state.token = '';
       state.isAuth = false;
       state.isLoading = false;
+      state.error = null;
+      state.user = null;
     },
     clearError(state) {
       state.error = null;
@@ -95,34 +192,69 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(checkEmail.pending, (state) => {
+      .addCase(checkRegister.pending, (state) => {
         state.isLoading = true;
       })
-      .addCase(checkEmail.fulfilled, (state, action) => {
+      .addCase(checkRegister.fulfilled, (state, action) => {
         state.isLoading = false;
         state.token = action.payload.token;
       })
-      .addCase(checkEmail.rejected, (state, action) => {
+      .addCase(checkRegister.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;
       })
-      .addCase(createNewUser.pending, (state) => {
+      .addCase(checkRegisterSecret.pending, (state) => {
         state.isLoading = true;
       })
-      .addCase(createNewUser.fulfilled, (state, action) => {
+      .addCase(checkRegisterSecret.fulfilled, (state, action) => {
         state.isLoading = false;
         state.token = action.payload.token;
       })
-      .addCase(createNewUser.rejected, (state, action) => {
+      .addCase(checkRegisterSecret.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload;
+      })
+      .addCase(checkLogin.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(checkLogin.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.token = action.payload.token;
+      })
+      .addCase(checkLogin.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload;
+      })
+      .addCase(checkLoginSecret.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(checkLoginSecret.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.token = action.payload.token;
+      })
+      .addCase(checkLoginSecret.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload;
+      })
+      .addCase(loginUserByToken.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(loginUserByToken.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isAuth = true;
+        state.user = action.payload;
+      })
+      .addCase(loginUserByToken.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;
       });
   },
 });
 
-export const { authUser, logoutUser, clearError } = authSlice.actions;
+export const { logoutUser, clearError } = authSlice.actions;
 export default authSlice.reducer;
 
 export const selectIsLoading = (state: RootState) => state.auth.isLoading;
 export const selectIsAuth = (state: RootState) => state.auth.isAuth;
 export const selectError = (state: RootState) => state.auth.error;
+export const selectUser = (state: RootState) => state.auth.user;

@@ -1,4 +1,4 @@
-import { Fragment } from 'react';
+import { Fragment, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Global } from '@emotion/react';
 
@@ -13,13 +13,18 @@ import SignIn from './pages/sign-in-up/SignIn';
 import SignUp from './pages/sign-in-up/SignUp';
 import PageNotFound from './pages/page-not-found/PageNotFound';
 
-import { useAppSelector } from './store/store';
-import { selectIsAuth } from './store/authSlice';
+import { useAppDispatch, useAppSelector } from './store/store';
+import { loginUserByToken, selectIsAuth } from './store/authSlice';
 
 import { GlobalStyles } from './GlobalStyles';
 
 const App = () => {
+  const dispatch = useAppDispatch();
   const isAuth = useAppSelector(selectIsAuth);
+
+  useEffect(() => {
+    if (localStorage.getItem('token')) dispatch(loginUserByToken());
+  }, [dispatch]);
 
   return (
     <Fragment>

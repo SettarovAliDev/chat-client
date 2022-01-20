@@ -30,6 +30,7 @@ const Navigation = () => {
 
   const onHandleLogout = () => {
     dispatch(logoutUser());
+    localStorage.removeItem('token');
   };
 
   return (

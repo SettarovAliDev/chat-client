@@ -1,5 +1,17 @@
 import { useEffect, useState } from 'react';
 
+import Spinner from '../../components/spinner/Spinner';
+import Modal from '../../components/modal/Modal';
+import Authentication from '../../components/authentication/Authentication';
+
+import { useAppDispatch, useAppSelector } from '../../store/store';
+import {
+  checkLogin,
+  clearError,
+  selectError,
+  selectIsLoading,
+} from '../../store/authSlice';
+
 import {
   Container,
   Form,
@@ -9,17 +21,11 @@ import {
   Error,
 } from './SignInUpStyles';
 import { MainHeading } from '../../GlobalStyles';
-import { useAppDispatch, useAppSelector } from '../../store/store';
-import {
-  clearError,
-  selectError,
-  selectIsLoading,
-} from '../../store/authSlice';
-import Spinner from '../../components/spinner/Spinner';
 
 const SignIn = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
 
   const dispatch = useAppDispatch();
 
@@ -45,12 +51,32 @@ const SignIn = () => {
   const onSubmitHandler = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    if (error) {
+      dispatch(clearError());
+    }
+
+    const response = await dispatch(checkLogin({ email, password }));
+    if (response.hasOwnProperty('error')) return;
+    setIsAuthOpen(true);
+  };
+
+  const onCloseAuthHandler = () => {
     setEmail('');
     setPassword('');
+
+    setIsAuthOpen(false);
   };
 
   return (
     <Container>
+      {isAuthOpen && (
+        <Modal onCloseAuthHandler={onCloseAuthHandler}>
+          <Authentication
+            loginData={{ email, password }}
+            onCloseAuth={onCloseAuthHandler}
+          />
+        </Modal>
+      )}
       <MainHeading>
         <HeadingNavLink to="/sign-in">Sign In</HeadingNavLink> /{' '}
         <HeadingNavLink to="/sign-up">Sign Up</HeadingNavLink>
