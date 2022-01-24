@@ -1,6 +1,8 @@
 import { selectChats } from '../../../store/chatsSlice';
 import { useAppSelector } from '../../../store/store';
 
+import ChatsListItemsHeader from './chats-list-items-header/ChatsListItemsHeader';
+
 import { ChatItem } from './ChatsListItemsStyles';
 
 const ChatsListItems = () => {
@@ -9,7 +11,9 @@ const ChatsListItems = () => {
   return (
     <div>
       {chats.map((chat) => (
-        <ChatItem>{chat.name}</ChatItem>
+        <ChatItem key={chat.id}>
+          <ChatsListItemsHeader chat={chat} />
+        </ChatItem>
       ))}
     </div>
   );
