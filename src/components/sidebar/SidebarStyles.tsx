@@ -27,9 +27,11 @@ export const UserTitle = styled.div`
   margin: 1.5rem 1rem 7.6rem 0;
   font-size: 1.8rem;
   text-align: center;
+  color: var(--text-color-dark);
 `;
 
 export const ArrowDownStyled = styled(ArrowDown)`
   cursor: pointer;
   margin-left: 6px;
+  stroke: var(--text-color-dark);
 `;

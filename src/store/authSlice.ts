@@ -20,6 +20,7 @@ export const checkRegister = createAsyncThunk<
         Accept: 'application/json',
       },
     });
+
     return response.data;
   } catch (error: any) {
     console.error(error);

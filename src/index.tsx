@@ -5,14 +5,17 @@ import { Provider } from 'react-redux';
 
 import App from './App';
 import store from './store/store';
+import SocketProvider from './contexts/socket-context/SocketContext';
 
 ReactDOM.render(
   <Provider store={store}>
-    <BrowserRouter>
-      <React.StrictMode>
-        <App />
-      </React.StrictMode>
-    </BrowserRouter>
+    <SocketProvider>
+      <BrowserRouter>
+        <React.StrictMode>
+          <App />
+        </React.StrictMode>
+      </BrowserRouter>
+    </SocketProvider>
   </Provider>,
   document.getElementById('root')
 );

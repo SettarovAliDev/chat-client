@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import Modal from '../../components/modal/Modal';
 import Authentication from '../../components/authentication/Authentication';
 import Spinner from '../../components/spinner/Spinner';
+import { Button } from '../../components/button/Button';
 
 import { useAppDispatch, useAppSelector } from '../../store/store';
 import {
@@ -16,7 +17,6 @@ import {
   Container,
   Form,
   Input,
-  Button,
   HeadingNavLink,
   Error,
 } from './SignInUpStyles';

@@ -17,13 +17,20 @@ import { useAppDispatch, useAppSelector } from './store/store';
 import { loginUserByToken, selectIsAuth } from './store/authSlice';
 
 import { GlobalStyles } from './GlobalStyles';
+import { getChats } from './store/chatsSlice';
 
 const App = () => {
   const dispatch = useAppDispatch();
   const isAuth = useAppSelector(selectIsAuth);
 
   useEffect(() => {
-    if (localStorage.getItem('token')) dispatch(loginUserByToken());
+    const initialLoad = async () => {
+      if (localStorage.getItem('token')) {
+        await dispatch(loginUserByToken());
+        await dispatch(getChats({ start: 0, howMany: 10 }));
+      }
+    };
+    initialLoad();
   }, [dispatch]);
 
   return (
