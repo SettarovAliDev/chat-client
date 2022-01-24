@@ -1,19 +1,8 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import chatApi from '../api/api';
 
-interface IChat {
-  id: string;
-  isRoom: boolean;
-  time: number;
-  status: string;
-  photo: string;
-  online: boolean;
-  noChecked: number;
-  message: string;
-  file?: string;
-  name: string;
-  exitDate: number | false;
-}
+import { RootState } from './store';
+import chatApi from '../api/api';
+import { IChat } from '../types/chat.types';
 
 export const getChats = createAsyncThunk<
   IChat[],
@@ -60,7 +49,11 @@ const initialState: IChatsState = {
 const chatsSlice = createSlice({
   name: 'chats',
   initialState,
-  reducers: {},
+  reducers: {
+    addRoom(state, action) {
+      state.chats.push(action.payload);
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(getChats.pending, (state) => {
@@ -77,4 +70,7 @@ const chatsSlice = createSlice({
   },
 });
 
+export const { addRoom } = chatsSlice.actions;
 export default chatsSlice.reducer;
+
+export const selectChats = (state: RootState) => state.chats.chats;

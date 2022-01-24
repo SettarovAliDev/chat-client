@@ -1,5 +1,8 @@
 import { FC, createContext, useContext, useEffect, useRef } from 'react';
 import io, { Socket } from 'socket.io-client';
+import { addRoom } from '../../store/chatsSlice';
+import { useAppDispatch } from '../../store/store';
+import { IChat } from '../../types/chat.types';
 import { IFile } from '../../types/file.types';
 import Actions from './socketActions';
 
@@ -16,6 +19,8 @@ export const useSocket = () => {
 const SocketProvider: FC = ({ children }) => {
   const socket = useRef<Socket | null>(null);
 
+  const dispatch = useAppDispatch();
+
   useEffect(() => {
     socket.current = io('http://localhost:3001', {
       auth: {
@@ -25,6 +30,11 @@ const SocketProvider: FC = ({ children }) => {
 
     socket.current.on(Actions.ClientConnection, (res) => {
       console.log(res);
+    });
+
+    socket.current.on(Actions.ClientCreateRoom, (room: IChat) => {
+      socket.current?.emit(Actions.ServerJoinRoom, room.id);
+      dispatch(addRoom(room));
     });
 
     return () => {
